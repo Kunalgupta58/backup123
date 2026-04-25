@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿---
 title: VoiceKey Biometric Auth
 emoji: "🎤"
@@ -131,3 +132,6 @@ For automated testing, navigate to the auto-generated Swagger UI: `http://localh
   - Perform backend erasure of user biometrics.
 # voice-auth
 
+=======
+# backup123
+>>>>>>> 65176f2a4f0d4532da1e444e1cb73f79172ff236

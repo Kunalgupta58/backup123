@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, ArrowRight, ShieldCheck, Fingerprint, Zap } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';
@@ -6,7 +6,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import VoiceRecorder from '../components/voice/VoiceRecorder';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
-import { ToastContext } from '../App';
+import { ToastContext } from '../contexts/ToastContext';
 import './Login.css';
 
 const FEATURES = [
@@ -25,37 +25,46 @@ export default function Login({ onSuccess, onSwitch }) {
     const showToast = useContext(ToastContext);
 
     const [loginPhrase, setLoginPhrase] = useState(DEFAULT_LOGIN_PHRASE);
+    const loginCompleteRef = useRef(null);
 
-    const { status, setStatus, startRecording, audioBlob, reset } = useVoiceRecorder(async (blob) => {
-        try {
-            const formData = new FormData();
-            formData.append('username', username);
-            formData.append('audio', blob, 'login.webm');
-            if (challengeId) {
-                formData.append('challenge_id', challengeId);
-            }
+    const handleLoginBlob = useCallback(async (blob) => {
+        await loginCompleteRef.current?.(blob);
+    }, []);
 
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                body: formData,
-            });
+    const { status, setStatus, startRecording, audioBlob, reset } = useVoiceRecorder(handleLoginBlob);
 
-            const data = await response.json();
+    useEffect(() => {
+        loginCompleteRef.current = async (blob) => {
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('audio', blob, 'login.webm');
+                if (challengeId) {
+                    formData.append('challenge_id', challengeId);
+                }
 
-            if (response.ok) {
-                setStatus('success');
-                showToast?.(`Welcome back, ${data.username}! Authentication successful.`, 'success');
-                onSuccess?.(data);
-            } else {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setStatus('success');
+                    showToast?.(`Welcome back, ${data.username}! Authentication successful.`, 'success');
+                    onSuccess?.(data);
+                } else {
+                    setStatus('error');
+                    showToast?.(data.detail || 'Authentication failed.', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
                 setStatus('error');
-                showToast?.(data.detail || 'Authentication failed.', 'error');
+                showToast?.('Connection error. Please try again.', 'error');
             }
-        } catch (error) {
-            console.error('Login error:', error);
-            setStatus('error');
-            showToast?.('Connection error. Please try again.', 'error');
-        }
-    });
+        };
+    }, [username, challengeId, showToast, onSuccess, setStatus]);
 
 
     const goVoice = async () => {
@@ -63,16 +72,19 @@ export default function Login({ onSuccess, onSwitch }) {
         
         try {
             const response = await fetch('/api/liveness-phrase');
-            if (response.ok) {
-                const data = await response.json();
-                setLoginPhrase(data.phrase);
-                setChallengeId(data.challenge_id);
+            if (!response.ok) {
+                const data = await response.json().catch(() => null);
+                throw new Error(data?.detail || 'Unable to fetch liveness phrase.');
             }
+
+            const data = await response.json();
+            setLoginPhrase(data.phrase);
+            setChallengeId(data.challenge_id);
+            setScreen('voice');
         } catch (error) {
-            console.warn('Could not fetch liveness phrase, using default.', error);
+            console.warn('Could not fetch liveness phrase:', error);
+            showToast?.('Unable to load the liveness challenge. Please try again.', 'error');
         }
-        
-        setScreen('voice');
     };
 
 

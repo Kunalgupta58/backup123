@@ -1,19 +1,23 @@
-import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, CheckCircle2, AlertCircle, Loader2, RefreshCw, Play } from 'lucide-react';
 import Button from '../ui/Button';
 import './VoiceRecorder.css';
 
+const WAVEFORM_BARS = Array.from({ length: 24 }).map((_, i) => ({
+    duration: 0.4 + ((i % 6) * 0.08),
+    delay: ((i % 8) * 0.05),
+}));
+
 /* Animated waveform – 24 bars */
 const Waveform = ({ active }) => (
     <div className="vr-wave">
-        {Array.from({ length: 24 }).map((_, i) => (
+        {WAVEFORM_BARS.map((bar, i) => (
             <span
                 key={i}
                 className="vr-bar"
                 style={{
-                    animationDuration: `${0.4 + Math.random() * 0.6}s`,
-                    animationDelay: `${Math.random() * 0.4}s`,
+                    animationDuration: `${bar.duration}s`,
+                    animationDelay: `${bar.delay}s`,
                     opacity: active ? 1 : 0.15,
                 }}
             />
@@ -39,6 +43,7 @@ const VoiceRecorder = ({ status, onRecord, onReplay, duration = 10, phrase, time
             <div className="vr-phrase">
                 <span className="vr-phrase-tag">📢 READ ALOUD</span>
                 <p className="vr-phrase-text">{phrase}</p>
+                <p className="vr-phrase-duration">Target recording length: {duration}s</p>
             </div>
 
             {/* Orb */}

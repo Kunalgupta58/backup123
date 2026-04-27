@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿---
+---
 title: VoiceKey Biometric Auth
 emoji: "🎤"
 colorFrom: blue
@@ -11,125 +10,106 @@ pinned: false
 
 # VoiceKey: Biometric Voice Authentication System
 
-A complete, production-ready full-stack web application designed for secure biometric voice authentication. It utilizes state-of-the-art Deep Learning (ECAPA-TDNN) for speaker verification and heuristic audio flat-lining/zero-crossing rate checks for liveness spoofing detection. 
+A full-stack voice biometric authentication app with React frontend and FastAPI backend. It uses SpeechBrain ECAPA-TDNN for speaker verification plus liveness checks to reject replay or synthetic audio.
 
-## System Architecture
-**1. Frontend**: A React + Vite single-page application.
-- Utilizes `MediaRecorder` API to capture the user's microphone securely.
-- Responsive, glassmorphism UI designed for premium aesthetics.
-- Captures voice samples with `MediaRecorder` and sends WebM `Blob` payloads via `FormData` to the backend.
+## Deployment Target
+This project is ready to deploy as a Hugging Face Space using a custom Docker container.
 
-**2. Backend API**: FastAPI (Python 3.10)
-- Endpoints designed for high throughput, protected by `slowapi` rate limits.
-- SQLite Database using SQLAlchemy ORM to store User metadata and their 192-dimensional Voice Embeddings.
-- JWT configured for secure, stateless session management (30 min expiry).
+- Frontend: React + Vite statically built into `dist`
+- Backend: FastAPI with model serving and static frontend hosting
+- Database: Configurable by `DATABASE_URL`, including Neon Postgres
+- Model: `speechbrain/spkrec-ecapa-voxceleb` loaded at runtime
+- Audio: `ffmpeg` support provided in the Docker container
 
-**3. Audio & ML Core**: `speechbrain` and `pydub`
-- Incoming audio is dynamically handled via `ffmpeg` wrapper (`pydub`) to enforce 16kHz Mono WAV formatting. 
-- The ECAPA-TDNN network extracts high-level acoustic features, computing a 192-dimensional vector.
-- Verification uses Cosine Similarity scoring to compare live embeddings against registered embeddings. 
-- An advanced Identification mode compares audio against *all* users if login username is omitted.
+## Hugging Face Spaces + Neon Deployment
+### What is already supported
+- `Dockerfile` is configured for HF Spaces
+- `PORT=7860` is exposed and used in the runtime command
+- `PRELOAD_MODEL=0` is set by default for faster startup
+- `CORS_ORIGINS=*` is enabled in the container for the Spaces frontend
+- `DATABASE_URL` is read from the environment and supports Neon
+- `postgres://` URIs are automatically rewritten to `postgresql://`
 
-**4. Security Design**:
-- **Anti-Spoofing (Liveness)**: Evaluates Spectral Flatness and Zero-Crossing Rate to identify robotic, flat, or synthetic pre-recorded playbacks.
-- **Data Protection**: Stores biometric vectors passively as binary Blobs instead of raw audio. Passwords are theoretically unnecessary, though JWT ensures standard web security post-login.
-- **Resource Limits**: Configured strictly without `uvicorn --reload` to maintain singular Model Instance loading, saving memory and eliminating Windows multiprocessing threading collisions.
+### Required environment variables
+Create a Hugging Face secret or `.env` with:
 
----
+```ini
+DATABASE_URL=postgresql://<username>:<password>@<host>:<port>/<database>
+SECRET_KEY=your-super-secret-key
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+PRELOAD_MODEL=0
+CORS_ORIGINS=*
+WEB_CONCURRENCY=1
+MODEL_CACHE_DIR=/tmp/spkrec-ecapa-voxceleb
+TEMP_AUDIO_DIR=/tmp/voicekey_temp_audio
+```
 
-## ðŸš€ Setup Guide (Windows Native Environment)
+> For Neon, use the connection string provided by your Neon dashboard.
 
-### Prerequisites
-- Python 3.10 installed (`python --version` to check).
-- Install **FFmpeg** on Windows:
-  1. Download latest build from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/) or use `winget install ffmpeg`.
-  2. Extract the folder and add `/bin` path to your System Environment variables (PATH).
-  3. Verify by running `ffmpeg -version` in CMD.
+### Hugging Face Space setup steps
+1. Push this repository to GitHub.
+2. Create a new Hugging Face Space.
+3. Select `Docker` as the SDK.
+4. Connect the repo or upload the source.
+5. Add required secrets for `DATABASE_URL`, `SECRET_KEY`, and optional settings.
+6. Deploy.
 
-### Installation
-1. Move to the directory: `cd voice_auth_system`
-2. Create Virtual Environment:
-   ```cmd
-   python -m venv venv
-   venv\Scripts\activate
-   ```
-3. Install Pinned Requirements:
-   ```cmd
-   pip install -r requirements.txt
-   ```
+### Notes for Neon
+- Neon provides a Postgres-compatible connection string.
+- The app uses SQLAlchemy and `psycopg2-binary` to connect.
+- Set `DATABASE_URL` in HF Spaces secrets to the Neon URI.
 
-### Execution
-Start the backend *without* reload to prevent multiprocessing clashes with SpeechBrain/Windows.
-```cmd
+## Local Docker deployment
+
+Build and run locally:
+
+```bash
+docker build -t voicekey-app .
+docker run -p 7860:7860 \
+  -e DATABASE_URL="postgresql://<user>:<pass>@<host>:<port>/<db>" \
+  -e SECRET_KEY="super-secret" \
+  -e PRELOAD_MODEL=0 \
+  voicekey-app
+```
+
+## Local development
+
+Install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+npm install
+npm run build
+```
+
+Run backend locally:
+
+```bash
 python backend/main.py
 ```
-*Note: Your application will automatically host frontend static files. Visit `http://127.0.0.1:8000` in your web browser.*
 
----
+Open `http://127.0.0.1:8000` after startup.
 
-## ðŸ³ Deployment Instructions (Docker)
+## How the Neon integration works
+- `backend/config.py` reads `DATABASE_URL`
+- If the URL begins with `postgres://`, it is rewritten to `postgresql://`
+- `backend/database.py` uses the same URL for SQLAlchemy
+- `psycopg2-binary` is included in `requirements.txt`
 
-If you prefer containerized deployment for production environments, use the included Dockerfile.
+## Important deployment details
+- `Dockerfile` installs `ffmpeg` and `libsndfile1` so WebM audio can be converted in the container.
+- `backend/main.py` serves the static frontend from `dist` if present.
+- `PRELOAD_MODEL=0` prevents heavy model download on startup; the model loads lazily on first request.
+- `WEB_CONCURRENCY=1` is recommended for Hugging Face Spaces to reduce memory usage.
 
-1. Build the image:
-   ```bash
-   docker build -t voice_auth_app .
-   ```
-2. Run the container:
-   ```bash
-   docker run -p 8000:8000 -d voice_auth_app
-   ```
-
-*The setup installs `ffmpeg` on a Debian base inside the container automatically and defaults to 1 worker for low-memory environments (like HF Spaces).*
-
-### Hugging Face Spaces (Docker) Notes
-- `PORT` is set to `7860` in the Dockerfile.
-- Model files are downloaded from Hugging Face Hub at runtime and cached under `/tmp`.
-- Do not commit `node_modules/`, `backend/pretrained_models/`, `backend/temp_audio/`, or virtual environments.
-
----
-
-## ðŸ› ï¸ Windows Troubleshooting Guide
-
-**1. "Symlink Warning" or "Access Denied" by HuggingFace Hub**
-- **Cause**: Windows requires Developer Mode or Admin rights to create symbolic links, which HuggingFace Hub tries to do by default.
-- **Solution**: Already handled in codebase. `HF_HUB_DISABLE_SYMLINKS=1` is injected into the environment runtime before module loads.
-
-**2. WinError 32: The process cannot access the file because it is being used by another process**
-- **Cause**: Reloading Uvicorn causes multiple overlapping processes to attempt to lock SQLite or SpeechBrain model downloads.
-- **Solution**: Never run with `uvicorn main:app --reload`. Only run `python backend/main.py` directly.
-
-**3. "FFmpeg not found" error during Voice login/registration.**
-- **Cause**: Pydub cannot locate FFmpeg in your Windows PATH.
-- **Solution**: Follow the FFmpeg prerequisites. Ensure you restart your command prompt after adding FFmpeg to PATH.
-
-**4. Pytorch multiprocessing freeze**
-- **Cause**: Multithreading issues with DataLoader in Windows.
-- **Solution**: Model execution is forced to `CPU` and multiprocessing bounds are bypassed by direct inference methods in `ml_engine.py`.
-
----
-
-## ðŸ“¡ API Usage Instructions
-
-For automated testing, navigate to the auto-generated Swagger UI: `http://localhost:8000/docs`.
-
-### Key Endpoints:
-- `POST /api/register`
-  - Accepts `username` (string) and `audio1`, `audio2`, `audio3` (file chunks). 
-  - Extracts and saves the voice embedding if liveness passes.
-  
-- `POST /api/login`
-  - Accepts `audio` (file chunk), `challenge_id`, and optional `username`. 
-  - Validates liveness constraints. Returns JWT string and risk metric data. If username is blank, performs global search among all records (Open-set identification).
-
+## API Overview
+- `GET /api/health`
 - `GET /api/liveness-phrase`
-  - Fetch random human-readable challenges for active authorization.
-
+- `POST /api/register`
+- `POST /api/login`
 - `GET /api/admin/users`
-  - Retrieve current registered system profiles.
-  
-- `DELETE /api/admin/users/{id}`
-  - Perform backend erasure of user biometrics.
-# voice-auth
+- `DELETE /api/admin/users/{user_id}`
 
-=======
+## Recommended additions
+- Add a `.env.example` file for developer and deployment reference.
+- Keep secrets out of git.

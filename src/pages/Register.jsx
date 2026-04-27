@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, ArrowRight, ArrowLeft, Mic } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';
@@ -7,7 +7,7 @@ import Button from '../components/ui/Button';
 import ProgressStepper from '../components/ui/ProgressStepper';
 import VoiceRecorder from '../components/voice/VoiceRecorder';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
-import { ToastContext } from '../App';
+import { ToastContext } from '../contexts/ToastContext';
 import './Register.css';
 
 const PHRASES = [
@@ -30,13 +30,22 @@ export default function Register({ onSuccess, onSwitch }) {
     const [blobs, setBlobs] = useState([]);
     const [submitting, setSubmitting] = useState(false);
     const showToast = useContext(ToastContext);
+    const registerCompleteRef = useRef(null);
+
+    const handleRegisterBlob = useCallback(async (blob) => {
+        await registerCompleteRef.current?.(blob);
+    }, []);
 
     const { status, setStatus, audioBlob, timeLeft, startRecording, reset } =
-        useVoiceRecorder(async (blob) => {
+        useVoiceRecorder(handleRegisterBlob);
+
+    useEffect(() => {
+        registerCompleteRef.current = async (blob) => {
             await new Promise(r => setTimeout(r, 1200));
             setStatus('success');
             setBlobs(prev => [...prev, blob]);
-        });
+        };
+    }, [setStatus]);
 
     const isVoiceStep = step > 0;
     const voiceStepIndex = step - 1; // 0-based

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
     Layout, 
@@ -8,7 +8,6 @@ import {
     FileText, 
     Settings, 
     Shield, 
-    Activity, 
     ExternalLink 
 } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';

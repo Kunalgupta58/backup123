@@ -1,4 +1,3 @@
-import React from 'react';
 import './Input.css';
 
 const Input = ({ label, type = 'text', placeholder, value, onChange, error, hint, icon: Icon, id, autoFocus }) => (

@@ -1,4 +1,3 @@
-import React from 'react';
 import './Background.css';
 
 const PARTICLES = Array.from({ length: 28 }, (_, i) => ({

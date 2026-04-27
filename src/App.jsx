@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Navbar from './components/layout/Navbar';
 import Background from './components/layout/Background';
 import Toast from './components/ui/Toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import { ToastContext } from './contexts/ToastContext';
 import './App.css';
-
-export const ToastContext = React.createContext(null);
 
 function App() {
   const [currentPage, setCurrentPage] = useState('login');

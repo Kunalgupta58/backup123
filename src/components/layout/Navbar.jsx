@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Mic } from 'lucide-react';
 import './Navbar.css';
 

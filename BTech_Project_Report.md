@@ -4,13 +4,13 @@
 
 **Technology Stack:** React + FastAPI + Python AI + SpeechBrain + SQLAlchemy + Vite
 
-**Domain:** Artificial Intelligence / Web Development / Cybersecurity
+**Domain:** Artificial Intelligence 
 
-**Team Members:** [Your Name], [Team Member 2]
+**Team Members:** Kunal Gupta , Anu Chaudhary , Aditya Gupta
 
-**Guide Name:** [Guide Name]
+**Guide Name:** Gaurav Bathla
 
-**College Name:** [College Name]
+**College Name:** GLA University
 
 **Academic Year:** 2025-2026
 
@@ -18,11 +18,11 @@
 
 ## Declaration
 
-I hereby declare that the project entitled **"VoiceKey Biometric Voice Authentication System"** submitted to **[College Name]** in partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in Computer Science and Engineering is an original work carried out by me and my team members. The work contained in this report has not been submitted previously in part or full to any other university or institute for any degree or diploma.
+I hereby declare that the project entitled **"VoiceKey Biometric Voice Authentication System"** submitted to **GLA UNIVERSITY** in partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in Computer Science and Engineering is an original work carried out by me and my team members. The work contained in this report has not been submitted previously in part or full to any other university or institute for any degree or diploma.
 
-Place: [City]
+Place: [Mathura]
 
-Date: [Date]
+Date: [30/04/]
 
 
 | Name | Signature | Roll Number |
@@ -531,14 +531,14 @@ KDSI = 4.5
 
 Effort = 2.4 * (4.5)^1.05 ≈ 12.5 person-months
 
-Duration = 2.5 * (12.5)^0.38 ≈ 6.2 months
+Duration = 2.5 * (12.5)^0.38 ≈ 4.2 months
 
 ### Resource Allocation
 
 Assuming a team of two students, the schedule becomes:
 
 - Total effort: ~12.5 person-months.
-- Estimated duration: 6 months.
+- Estimated duration: 4 months.
 
 This estimate includes analysis, design, development, testing, and documentation.
 

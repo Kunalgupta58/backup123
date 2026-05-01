@@ -185,12 +185,6 @@ export default function Login({ onSuccess, onSwitch }) {
                                         Continue with Voice
                                     </Button>
 
-                                    <div className="or-divider"><span>OR</span></div>
-
-                                    <Button variant="secondary" className="w-full" size="md">
-                                        Sign in with SSO
-                                    </Button>
-
                                     <p className="auth-legal">
                                         By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
                                     </p>

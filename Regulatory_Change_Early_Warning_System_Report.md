@@ -1,11 +1,10 @@
 # Regulatory Change Early Warning System
 
-### Research Report for SENTINEL X
 Prepared by: Kunal Gupta
 
 Team: Sentinel X
 
-Date: June 2026
+Date: 13 June 2026
 
 ---
 

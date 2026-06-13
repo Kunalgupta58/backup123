@@ -1,4 +1,3 @@
-# Sentinel X
 # Regulatory Change Early Warning System
 
 Prepared by: Kunal Gupta

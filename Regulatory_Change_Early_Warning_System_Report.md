@@ -404,7 +404,7 @@ Ethical considerations include:
 • Regulatory accountability
 
 
-# Recommendations for Sentinel X
+# Sentinel X
 To maximize effectiveness, Sentinel X should:
 
 • Implement Apache Kafka for real-time regulatory streaming.
